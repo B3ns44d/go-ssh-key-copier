@@ -25,6 +25,7 @@ Command-line flags:
 *   `-ssh-key`: Path to the SSH public key to copy. Overrides default key discovery (e.g., `~/.ssh/id_ed25519.pub`).
 *   `-dry-run`: Print commands that would be executed without running them (default: `false`).
 *   `-parallelism`: Number of VMs to process in parallel (0 or 1 for sequential, default: `5`).
+*   `--accept-host-keys`: Automatically accept new SSH host keys. **Security Warning:** This option can be a security risk. By automatically accepting new host keys, you are vulnerable to man-in-the-middle attacks. Only use this option in trusted networks.
 
 # Configuration
 The VM list file should contain one VM hostname or IP address per line.
