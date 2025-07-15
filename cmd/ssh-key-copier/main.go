@@ -24,6 +24,7 @@ func main() {
 	sshKeyPathFlag := flag.String("ssh-key", "", "Path to the SSH public key to copy. Overrides default key discovery.")
 	dryRun := flag.Bool("dry-run", false, "Print commands that would be executed without running them.")
 	parallelism := flag.Int("parallelism", 5, "Number of VMs to process in parallel (0 or 1 for sequential).")
+	acceptHostKeys := flag.Bool("accept-host-keys", false, "Automatically accept new SSH host keys (security risk).")
 
 	flag.Parse()
 
@@ -110,7 +111,7 @@ func main() {
 			defer wg.Done()
 			for vm := range jobs {
 				log.Printf("[Worker %d] Processing VM: %s (from file line %d)\n", workerID, vm.Name, vm.LineNumber)
-				result := copier.ProcessVM(vm, *userName, password, finalSSHKeyPath, *dryRun, sshpassPath, useSSHPass)
+				result := copier.ProcessVM(vm, *userName, password, finalSSHKeyPath, *dryRun, sshpassPath, useSSHPass, *acceptHostKeys)
 				resultsChan <- result
 			}
 		}(w)
