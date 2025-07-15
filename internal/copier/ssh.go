@@ -34,6 +34,7 @@ func ProcessVM(
 	dryRun bool,
 	sshpassPath string,
 	useSSHPass bool,
+	acceptHostKeys bool,
 ) ExecutionResult {
 
 	if username == "" { // Should be guaranteed by main, but good to check
@@ -67,20 +68,23 @@ func ProcessVM(
 	var cmdArgs []string
 	var commandToRun string
 
+	var baseArgs []string
 	// Use sshpass if enabled, available, and password is provided (password will always be provided if prompt was successful)
 	if useSSHPass && password != "" && sshpassPath != "" {
 		commandToRun = sshpassPath
-		cmdArgs = append(cmdArgs, "-p", password, "ssh-copy-id", "-i", sshKeyPath, target)
-		// Consider adding StrictHostKeyChecking=no here if needed, with security warnings
-		// cmdArgs = append(cmdArgs, "-p", password, "ssh-copy-id", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-i", sshKeyPath, target)
+		baseArgs = []string{"-p", password, "ssh-copy-id"}
 	} else {
 		commandToRun = "ssh-copy-id"
-		cmdArgs = append(cmdArgs, "-i", sshKeyPath, target)
-		// cmdArgs = append(cmdArgs, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-i", sshKeyPath, target)
-		if password != "" && (!useSSHPass || sshpassPath == "") {
+		if password != "" {
 			log.Printf("Warning: [VM: %s] Password was provided, but sshpass is not found/enabled. ssh-copy-id will attempt to use its interactive prompt.", vm.Name)
 		}
 	}
+
+	if acceptHostKeys {
+		baseArgs = append(baseArgs, "-o", "StrictHostKeyChecking=accept-new")
+	}
+
+	cmdArgs = append(baseArgs, "-i", sshKeyPath, target)
 
 	// Construct the full command string for logging, obscuring password
 	logCmdStr := commandToRun
